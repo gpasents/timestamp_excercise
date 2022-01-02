@@ -4,6 +4,7 @@
 // init project
 var express = require('express');
 var app = express();
+var moment = require('moment');
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -12,6 +13,12 @@ app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 20
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
+
+//logger
+app.use((req,res,next)=>{
+  console.log(req.method + " "+ req.ip );
+  next();
+});
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (req, res) {
@@ -23,6 +30,46 @@ app.get("/", function (req, res) {
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
+
+const isUnix = (ts)=>{
+  return moment(ts,"X",true).isValid();
+}
+
+const isNormal = (ts)=>{
+  return moment(ts).isValid();
+}
+const isValid = (timeStamp)=>{
+  if (isUnix(timeStamp)){
+    return true;
+  }else{
+    return isNormal(timeStamp);
+  }
+}
+
+app.get("/api/:stamp",(req,res,next)=>{
+  let stamp = req.params.stamp;
+  let json = {};
+  if (isValid(stamp)){
+    if (isUnix(stamp)){
+      let date = new Date(Number(stamp));
+      json = {"unix":stamp,"utc":date};
+    }else{
+      let ts = (new Date(stamp)).getTime()/1000;
+      json = {"unix":ts,"utc":stamp};
+    }
+  }else{
+    json = {"error":"Invalid Date"};
+  }
+  res.json(json);
+  next();
+});
+
+app.get("/api",(req,res,next)=>{
+  let date = new Date();
+  let ts = Math.round(date.getTime()/1000);
+
+  res.json({"unix":ts,"utc":date});
+})
 
 
 
