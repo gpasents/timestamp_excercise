@@ -52,10 +52,10 @@ app.get("/api/:stamp",(req,res,next)=>{
   if (isValid(stamp)){
     if (isUnix(stamp)){
       let date = new Date(Number(stamp));
-      json = {"unix":stamp,"utc":date};
+      json = {"unix":date.getTime(),"utc":date.toUTCString()};
     }else{
-      let ts = (new Date(stamp)).getTime()/1000;
-      json = {"unix":ts,"utc":stamp};
+      let ts = (new Date(stamp));
+      json = {"unix":ts.getTime(),"utc":String(ts.toUTCString())};
     }
   }else{
     json = {"error":"Invalid Date"};
@@ -66,9 +66,8 @@ app.get("/api/:stamp",(req,res,next)=>{
 
 app.get("/api",(req,res,next)=>{
   let date = new Date();
-  let ts = Math.round(date.getTime()/1000);
 
-  res.json({"unix":ts,"utc":date});
+  res.json({"unix":date.getTime(),"utc":date.toUTCString()});
 })
 
 
